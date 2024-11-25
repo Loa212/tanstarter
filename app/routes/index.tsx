@@ -1,12 +1,13 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { Button } from "~/components/ui/button";
+import { useSession } from "~/lib/auth-client";
 
 export const Route = createFileRoute("/")({
   component: Home,
 });
 
 function Home() {
-  const { user } = Route.useRouteContext();
+  const { data } = useSession();
 
   return (
     <div className="flex flex-col gap-4 p-6">
@@ -18,15 +19,15 @@ function Home() {
         </pre>
       </div>
 
-      {user ? (
+      {data?.user ? (
         <div className="flex flex-col gap-2">
-          <p>Welcome back, {user.name}!</p>
+          <p>Welcome back, {data?.user.name}!</p>
           <Button type="button" asChild className="w-fit" size="lg">
             <Link to="/dashboard">Go to Dashboard</Link>
           </Button>
           <div>
             More data:
-            <pre>{JSON.stringify(user, null, 2)}</pre>
+            <pre>{JSON.stringify(data?.user, null, 2)}</pre>
           </div>
 
           <form method="POST" action="/api/auth/logout">
@@ -39,7 +40,7 @@ function Home() {
         <div className="flex flex-col gap-2">
           <p>You are not signed in.</p>
           <Button type="button" asChild className="w-fit" size="lg">
-            <Link to="/signin">Sign in</Link>
+            <Link to="/auth/signin">Sign in</Link>
           </Button>
         </div>
       )}
