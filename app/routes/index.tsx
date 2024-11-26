@@ -1,14 +1,15 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
-import { signOut, useSession } from "~/lib/auth-client";
+import { signOut } from "~/lib/auth-client";
 
 export const Route = createFileRoute("/")({
   component: Home,
 });
 
 function Home() {
-  const { data } = useSession();
+  const { session } = Route.useRouteContext();
+  const navigate = Route.useNavigate();
 
   return (
     <div className="flex flex-col gap-4 p-6">
@@ -20,15 +21,15 @@ function Home() {
         </pre>
       </div>
 
-      {data?.user ? (
+      {session?.user ? (
         <div className="flex flex-col gap-2">
-          <p>Welcome back, {data?.user.name}!</p>
+          <p>Welcome back, {session?.user.name}!</p>
           <Button type="button" asChild className="w-fit" size="lg">
             <Link to="/dashboard">Go to Dashboard</Link>
           </Button>
           <div>
             More data:
-            <pre>{JSON.stringify(data?.user, null, 2)}</pre>
+            <pre>{JSON.stringify(session?.user, null, 2)}</pre>
           </div>
 
           <Button
@@ -40,7 +41,11 @@ function Home() {
                     console.warn(error);
                     toast.error(error.error.message);
                   },
-                  onSuccess: () => {
+                  onSuccess: async () => {
+                    await Route?.router?.invalidate();
+                    navigate({
+                      to: "/",
+                    });
                     toast.success("You have been signed out!");
                   },
                 },

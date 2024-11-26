@@ -1,11 +1,9 @@
-import { Link, createRootRoute, useRouter } from "@tanstack/react-router";
+import { Link, createRootRouteWithContext, useRouter } from "@tanstack/react-router";
 import { Outlet, ScrollRestoration } from "@tanstack/react-router";
-import { Meta, Scripts } from "@tanstack/start";
+import { createServerFn, Meta, Scripts } from "@tanstack/start";
 import type * as React from "react";
 import { useEffect, useState } from "react";
-import { getSession, signOut, useSession } from "~/lib/auth-client";
 import { DoorOpen, Moon, Sun } from "lucide-react";
-import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
 import {
   NavigationMenu,
@@ -18,8 +16,23 @@ import { Toaster } from "~/components/ui/sonner";
 import appCss from "~/styles/app.css?url";
 import { DefaultCatchBoundary } from "~/components/DefaultCatchBoundary";
 import { NotFound } from "~/components/NotFound";
+import { getWebRequest } from "vinxi/http";
+import { auth } from "~/lib/auth";
 
-export const Route = createRootRoute({
+export const getServerSesh = createServerFn({ method: "GET" }).handler(async () => {
+  return await auth.api.getSession({
+    headers: getWebRequest().headers,
+  });
+});
+
+// export const serverSignout = createServerFn({ method: "POST" }).handler(async () => {
+//   await auth.api.signOut({
+//     headers: getWebRequest().headers,
+//   });
+//   Route.router?.invalidate();
+// });
+
+export const Route = createRootRouteWithContext()({
   head: () => ({
     meta: [
       {
@@ -55,12 +68,14 @@ export const Route = createRootRoute({
   }),
   component: RootComponent,
   beforeLoad: async () => {
-    const { data: user } = await getSession();
+    const session = await getServerSesh();
 
     return {
-      user,
+      session,
+      example: "hello",
     };
   },
+
   errorComponent: (props) => {
     return (
       <RootDocument>
@@ -73,23 +88,16 @@ export const Route = createRootRoute({
 
 function RootComponent() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
-  const { data } = useSession();
   const { navigate } = useRouter();
-  console.log();
+
+  const { session } = Route.useRouteContext();
 
   useEffect(() => {
-    if (!data?.user) {
-      if (!location.pathname.includes("auth/")) {
-        navigate({ to: "/auth/signin" });
-      }
-    } else {
-      navigate({ to: "/" });
-    }
     // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
     setTheme(
       window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
     );
-  }, [data, navigate]);
+  }, [navigate]);
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -258,8 +266,8 @@ function RootComponent() {
             <p>TANSTACK START.</p>
           </div>
           <div className="flex items-center justify-center gap-4">
-            {data?.user ? (
-              <p>Hello {data.user.name}</p>
+            {session?.user ? (
+              <p>Hello {session.user.name}</p>
             ) : (
               <NavigationMenu>
                 <NavigationMenuList>
@@ -290,27 +298,6 @@ function RootComponent() {
             )}
           </div>
           <div className="flex items-center justify-center gap-4">
-            {data?.user && (
-              <Button
-                onClick={() =>
-                  signOut(
-                    {},
-                    {
-                      onError: (error) => {
-                        console.warn(error);
-                        toast.error(error.error.message);
-                      },
-                      onSuccess: () => {
-                        toast.success("You have been signed out!");
-                      },
-                    },
-                  )
-                }
-                variant="destructive"
-              >
-                <DoorOpen className="h-5 w-5" />
-              </Button>
-            )}
             <Button onClick={() => setTheme(theme === "light" ? "dark" : "light")}>
               {theme === "light" ? (
                 <Moon onClick={() => setTheme("dark")} className="h-5 w-5" />
