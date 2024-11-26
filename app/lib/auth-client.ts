@@ -2,7 +2,7 @@
 import { createAuthClient } from "better-auth/react";
 
 // export const { useSession, signIn, signOut, signUp, twoFactor } = createAuthClient({
-export const { useSession, signIn, signOut, signUp } = createAuthClient({
+export const { useSession, signIn, signOut, signUp, getSession } = createAuthClient({
   baseURL: "http://localhost:3000",
   plugins: [
     // twoFactorClient({

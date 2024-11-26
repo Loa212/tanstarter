@@ -3,7 +3,7 @@ import { Outlet, ScrollRestoration } from "@tanstack/react-router";
 import { Meta, Scripts } from "@tanstack/start";
 import type * as React from "react";
 import { useEffect, useState } from "react";
-import { signOut, useSession } from "~/lib/auth-client";
+import { getSession, signOut, useSession } from "~/lib/auth-client";
 import { DoorOpen, Moon, Sun } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
@@ -16,6 +16,8 @@ import {
 } from "~/components/ui/navigation-menu";
 import { Toaster } from "~/components/ui/sonner";
 import appCss from "~/styles/app.css?url";
+import { DefaultCatchBoundary } from "~/components/DefaultCatchBoundary";
+import { NotFound } from "~/components/NotFound";
 
 export const Route = createRootRoute({
   head: () => ({
@@ -52,6 +54,21 @@ export const Route = createRootRoute({
     ],
   }),
   component: RootComponent,
+  beforeLoad: async () => {
+    const { data: user } = await getSession();
+
+    return {
+      user,
+    };
+  },
+  errorComponent: (props) => {
+    return (
+      <RootDocument>
+        <DefaultCatchBoundary {...props} />
+      </RootDocument>
+    );
+  },
+  notFoundComponent: () => <NotFound />,
 });
 
 function RootComponent() {
@@ -68,6 +85,7 @@ function RootComponent() {
     } else {
       navigate({ to: "/" });
     }
+    // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
     setTheme(
       window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
     );

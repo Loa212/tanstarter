@@ -1,6 +1,7 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
+import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
-import { useSession } from "~/lib/auth-client";
+import { signOut, useSession } from "~/lib/auth-client";
 
 export const Route = createFileRoute("/")({
   component: Home,
@@ -30,11 +31,28 @@ function Home() {
             <pre>{JSON.stringify(data?.user, null, 2)}</pre>
           </div>
 
-          <form method="POST" action="/api/auth/logout">
-            <Button type="submit" className="w-fit" variant="destructive" size="lg">
-              Sign out
-            </Button>
-          </form>
+          <Button
+            onClick={() =>
+              signOut(
+                {},
+                {
+                  onError: (error) => {
+                    console.warn(error);
+                    toast.error(error.error.message);
+                  },
+                  onSuccess: () => {
+                    toast.success("You have been signed out!");
+                  },
+                },
+              )
+            }
+            type="button"
+            className="w-fit"
+            variant="destructive"
+            size="lg"
+          >
+            Sign out
+          </Button>
         </div>
       ) : (
         <div className="flex flex-col gap-2">
