@@ -3,7 +3,7 @@ import { Outlet, ScrollRestoration } from "@tanstack/react-router";
 import { createServerFn, Meta, Scripts } from "@tanstack/start";
 import type * as React from "react";
 import { useEffect, useState } from "react";
-import { DoorOpen, Moon, Sun } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import {
   NavigationMenu,
@@ -24,13 +24,6 @@ export const getServerSesh = createServerFn({ method: "GET" }).handler(async () 
     headers: getWebRequest().headers,
   });
 });
-
-// export const serverSignout = createServerFn({ method: "POST" }).handler(async () => {
-//   await auth.api.signOut({
-//     headers: getWebRequest().headers,
-//   });
-//   Route.router?.invalidate();
-// });
 
 export const Route = createRootRouteWithContext()({
   head: () => ({
